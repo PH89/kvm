@@ -657,17 +657,21 @@ export const useLocalAuthModalStore = create<LocalAuthModalState>(set => ({
 export interface DeviceState {
   appVersion: string | null;
   systemVersion: string | null;
+  extensionVersion: string | null;
 
   setAppVersion: (version: string) => void;
   setSystemVersion: (version: string) => void;
+  setExtensionVersion: (version: string) => void;
 }
 
 export const useDeviceStore = create<DeviceState>(set => ({
   appVersion: null,
   systemVersion: null,
+  extensionVersion: null,
 
   setAppVersion: version => set({ appVersion: version }),
   setSystemVersion: version => set({ systemVersion: version }),
+  setExtensionVersion: version => set({ extensionVersion: version }),
 }));
 
 export interface DhcpLease {

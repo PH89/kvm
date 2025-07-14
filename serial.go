@@ -251,6 +251,25 @@ func setDCRestoreState(state int) error {
 	return nil
 }
 
+func runDCFirmwareUpdate() error {
+	_, err := port.Write([]byte("\n"))
+	if err != nil {
+		return err
+	}
+	command := "FW_UPDATE\n"
+	_, err = port.Write([]byte(command))
+	buff := make([]byte, 6)
+	n, err := port.Read(buff)
+	if string(buff[:n]) == "READY\n" {
+		// transmit firmware update
+		
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 var defaultMode = &serial.Mode{
 	BaudRate: 115200,
 	DataBits: 8,

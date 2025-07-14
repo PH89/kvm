@@ -731,6 +731,7 @@ export default function KvmIdRoute() {
   const appVersion = useDeviceStore(state => state.appVersion);
   const setAppVersion = useDeviceStore(state => state.setAppVersion);
   const setSystemVersion = useDeviceStore(state => state.setSystemVersion);
+  const setExtensionVersion = useDeviceStore(state => state.setExtensionVersion);
 
   useEffect(() => {
     if (appVersion) return;
@@ -748,8 +749,9 @@ export default function KvmIdRoute() {
 
       setAppVersion(result.local.appVersion);
       setSystemVersion(result.local.systemVersion);
+      setExtensionVersion(result.local.extensionVersion)
     });
-  }, [appVersion, send, setAppVersion, setSystemVersion]);
+  }, [appVersion, send, setAppVersion, setSystemVersion, setExtensionVersion]);
 
   const ConnectionStatusElement = useMemo(() => {
     const hasConnectionFailed =

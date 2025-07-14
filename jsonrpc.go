@@ -710,6 +710,15 @@ func rpcSetDCRestoreState(state int) error {
 	return nil
 }
 
+func rpcRunDCFirmwareUpdate() error {
+	logger.Info().Msg("Run DC firmware update")
+	err := runDCFirmwareUpdate()
+	if err != nil {
+		return fmt.Errorf("failed to run DC firmware update: %w", err)
+	}
+	return nil
+}
+
 func rpcGetActiveExtension() (string, error) {
 	return config.ActiveExtension, nil
 }
@@ -1099,6 +1108,7 @@ var rpcHandlers = map[string]RPCHandler{
 	"getDCPowerState":        {Func: rpcGetDCPowerState},
 	"setDCPowerState":        {Func: rpcSetDCPowerState, Params: []string{"enabled"}},
 	"setDCRestoreState":      {Func: rpcSetDCRestoreState, Params: []string{"state"}},
+	"runDCFirmwareUpdate":    {Func: rpcRunDCFirmwareUpdate},
 	"getActiveExtension":     {Func: rpcGetActiveExtension},
 	"setActiveExtension":     {Func: rpcSetActiveExtension, Params: []string{"extensionId"}},
 	"getATXState":            {Func: rpcGetATXState},

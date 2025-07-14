@@ -20,7 +20,7 @@ func Main() {
 	appCtx, cancel = context.WithCancel(context.Background())
 	defer cancel()
 
-	systemVersionLocal, appVersionLocal, err := GetLocalVersion()
+	systemVersionLocal, appVersionLocal, _, err := GetLocalVersion()
 	if err != nil {
 		logger.Warn().Err(err).Msg("failed to get local version")
 	}

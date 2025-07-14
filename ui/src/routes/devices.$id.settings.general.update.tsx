@@ -42,10 +42,11 @@ export default function SettingsGeneralUpdateRoute() {
 }
 
 export interface SystemVersionInfo {
-  local: { appVersion: string; systemVersion: string };
-  remote?: { appVersion: string; systemVersion: string };
+  local: { appVersion: string; systemVersion: string, extensionVersion: string };
+  remote?: { appVersion: string; systemVersion: string, extensionVersion: string };
   systemUpdateAvailable: boolean;
   appUpdateAvailable: boolean;
+  extensionUpdateAvailable: boolean;
   error?: string;
 }
 
@@ -138,6 +139,7 @@ function LoadingState({
 
   const setAppVersion = useDeviceStore(state => state.setAppVersion);
   const setSystemVersion = useDeviceStore(state => state.setSystemVersion);
+  const setExtensionVersion = useDeviceStore(state => state.setExtensionVersion);
 
   const getVersionInfo = useCallback(() => {
     return new Promise<SystemVersionInfo>((resolve, reject) => {
@@ -149,6 +151,7 @@ function LoadingState({
           const result = resp.result as SystemVersionInfo;
           setAppVersion(result.local.appVersion);
           setSystemVersion(result.local.systemVersion);
+          setExtensionVersion(result.local.extensionVersion)
 
           if (result.error) {
             notifications.error(`Failed to check for updates: ${result.error}`);
@@ -159,7 +162,7 @@ function LoadingState({
         }
       });
     });
-  }, [send, setAppVersion, setSystemVersion]);
+  }, [send, setAppVersion, setSystemVersion, setExtensionVersion]);
 
   const progressBarRef = useRef<HTMLDivElement>(null);
   useEffect(() => {

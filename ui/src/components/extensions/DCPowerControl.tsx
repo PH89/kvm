@@ -46,7 +46,6 @@ export function DCPowerControl() {
     });
   };
   const handleRestoreChange = (state: number) => {
-    // const state = powerState?.restoreState === 0 ? 1 : powerState?.restoreState === 1 ? 2 : 0;
     send("setDCRestoreState", { state }, resp => {
       if ("error" in resp) {
         notifications.error(
@@ -57,8 +56,16 @@ export function DCPowerControl() {
       getDCPowerState(); // Refresh state after change
     });
   };
-
-
+  const handleFirmwareUpdate = () => {
+    send("runDCFirmwareUpdate", {}, resp => {
+      if ("error" in resp) {
+        notifications.error(
+          `Failed to start firmware update: ${resp.error.data || "Unknown error"}`,
+        );
+        return;
+      }
+    });
+  };
 
   useEffect(() => {
     getDCPowerState();
@@ -115,6 +122,15 @@ export function DCPowerControl() {
                 />
               </div>
             ) : null}
+            <div className="flex items-center">
+              <Button
+                  size="SM"
+                  theme="light"
+                  LeadingIcon={LuPower}
+                  text="Update Firmware"
+                  onClick={() => handleFirmwareUpdate()}
+              />
+            </div>
             <hr className="border-slate-700/30 dark:border-slate-600/30" />
 
             {/* Status Display */}

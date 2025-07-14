@@ -231,7 +231,7 @@ func waitCtrlAndRequestDisplayUpdate(shouldWakeDisplay bool) {
 func updateStaticContents() {
 	//contents that never change
 	updateLabelIfChanged("ui_Home_Content_Mac", networkState.MACString())
-	systemVersion, appVersion, err := GetLocalVersion()
+	systemVersion, appVersion, _, err := GetLocalVersion()
 	if err == nil {
 		updateLabelIfChanged("ui_About_Content_Operating_System_Version_ContentLabel", systemVersion.String())
 		updateLabelIfChanged("ui_About_Content_App_Version_Content_Label", appVersion.String())

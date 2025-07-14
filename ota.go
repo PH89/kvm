@@ -31,16 +31,18 @@ type UpdateMetadata struct {
 }
 
 type LocalMetadata struct {
-	AppVersion    string `json:"appVersion"`
-	SystemVersion string `json:"systemVersion"`
+	AppVersion       string `json:"appVersion"`
+	SystemVersion    string `json:"systemVersion"`
+	ExtensionVersion string `json:"extensionVersion"`
 }
 
 // UpdateStatus represents the current update status
 type UpdateStatus struct {
-	Local                 *LocalMetadata  `json:"local"`
-	Remote                *UpdateMetadata `json:"remote"`
-	SystemUpdateAvailable bool            `json:"systemUpdateAvailable"`
-	AppUpdateAvailable    bool            `json:"appUpdateAvailable"`
+	Local                    *LocalMetadata  `json:"local"`
+	Remote                   *UpdateMetadata `json:"remote"`
+	SystemUpdateAvailable    bool            `json:"systemUpdateAvailable"`
+	AppUpdateAvailable       bool            `json:"appUpdateAvailable"`
+	ExtensionUpdateAvailable bool            `json:"extensionUpdateAvailable"`
 
 	// for backwards compatibility
 	Error string `json:"error,omitempty"`
@@ -54,23 +56,25 @@ func GetBuiltAppVersion() string {
 	return builtAppVersion
 }
 
-func GetLocalVersion() (systemVersion *semver.Version, appVersion *semver.Version, err error) {
+func GetLocalVersion() (systemVersion *semver.Version, appVersion *semver.Version, extensionVersion *semver.Version, err error) {
 	appVersion, err = semver.NewVersion(builtAppVersion)
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid built-in app version: %w", err)
+		return nil, nil, nil, fmt.Errorf("invalid built-in app version: %w", err)
 	}
 
 	systemVersionBytes, err := os.ReadFile("/version")
 	if err != nil {
-		return nil, appVersion, fmt.Errorf("error reading system version: %w", err)
+		return nil, appVersion, nil, fmt.Errorf("error reading system version: %w", err)
 	}
 
 	systemVersion, err = semver.NewVersion(strings.TrimSpace(string(systemVersionBytes)))
 	if err != nil {
-		return nil, appVersion, fmt.Errorf("invalid system version: %w", err)
+		return nil, appVersion, nil, fmt.Errorf("invalid system version: %w", err)
 	}
 
-	return systemVersion, appVersion, nil
+	extensionVersion, err = semver.NewVersion("0.1")
+
+	return systemVersion, appVersion, extensionVersion, nil
 }
 
 func fetchUpdateMetadata(ctx context.Context, deviceId string, includePreRelease bool) (*UpdateMetadata, error) {
@@ -507,13 +511,14 @@ func GetUpdateStatus(ctx context.Context, deviceId string, includePreRelease boo
 	updateStatus := &UpdateStatus{}
 
 	// Get local versions
-	systemVersionLocal, appVersionLocal, err := GetLocalVersion()
+	systemVersionLocal, appVersionLocal, extensionVersionLocal, err := GetLocalVersion()
 	if err != nil {
 		return updateStatus, fmt.Errorf("error getting local version: %w", err)
 	}
 	updateStatus.Local = &LocalMetadata{
-		AppVersion:    appVersionLocal.String(),
-		SystemVersion: systemVersionLocal.String(),
+		AppVersion:       appVersionLocal.String(),
+		SystemVersion:    systemVersionLocal.String(),
+		ExtensionVersion: extensionVersionLocal.String(),
 	}
 
 	// Get remote metadata
@@ -532,9 +537,15 @@ func GetUpdateStatus(ctx context.Context, deviceId string, includePreRelease boo
 	if err != nil {
 		return updateStatus, fmt.Errorf("error parsing remote app version: %w, %s", err, remoteMetadata.AppVersion)
 	}
+	//TODO: add extension firmware versions to remoteMetadata
+	extensionVersionRemote, err := semver.NewVersion("0.1")
+	if err != nil {
+		return updateStatus, fmt.Errorf("error parsing remote app version: %w, %s", err, remoteMetadata.AppVersion)
+	}
 
 	updateStatus.SystemUpdateAvailable = systemVersionRemote.GreaterThan(systemVersionLocal)
 	updateStatus.AppUpdateAvailable = appVersionRemote.GreaterThan(appVersionLocal)
+	updateStatus.ExtensionUpdateAvailable = extensionVersionRemote.GreaterThan(extensionVersionLocal)
 
 	// Handle pre-release updates
 	isRemoteSystemPreRelease := systemVersionRemote.Prerelease() != ""

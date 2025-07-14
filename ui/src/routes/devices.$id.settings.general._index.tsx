@@ -18,9 +18,9 @@ export default function SettingsGeneralRoute() {
   const [autoUpdate, setAutoUpdate] = useState(true);
 
   const currentVersions = useDeviceStore(state => {
-    const { appVersion, systemVersion } = state;
+    const { appVersion, systemVersion, extensionVersion } = state;
     if (!appVersion || !systemVersion) return null;
-    return { appVersion, systemVersion };
+    return { appVersion, systemVersion, extensionVersion };
   });
 
   useEffect(() => {
@@ -60,6 +60,7 @@ export default function SettingsGeneralRoute() {
                     App: {currentVersions.appVersion}
                     <br />
                     System: {currentVersions.systemVersion}
+                    {currentVersions.extensionVersion ? (<><br />Extension: {currentVersions.extensionVersion}</>) : null}
                   </>
                 ) : (
                   <>
