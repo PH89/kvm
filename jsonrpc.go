@@ -720,12 +720,20 @@ func rpcSetActiveExtension(extensionId string) error {
 func rpcSetATXPowerAction(action string) error {
 	logger.Debug().Str("action", action).Msg("Executing ATX power action")
 	switch action {
+	// backwards compatibility with cloud. START
 	case "power-short":
 		logger.Debug().Msg("Simulating short power button press")
-		return pressATXPowerButton(200 * time.Millisecond)
+		return pressATXPowerButtonForTime(200 * time.Millisecond)
 	case "power-long":
 		logger.Debug().Msg("Simulating long power button press")
-		return pressATXPowerButton(5 * time.Second)
+		return pressATXPowerButtonForTime(5 * time.Second)
+	// backwards compatibility with cloud. END
+	case "power-press":
+		logger.Debug().Msg("Simulating power button press")
+		return pressATXPowerButton()
+	case "power-release":
+		logger.Debug().Msg("Simulating power button release")
+		return releaseATXPowerButton()
 	case "reset":
 		logger.Debug().Msg("Simulating reset button press")
 		return pressATXResetButton(200 * time.Millisecond)

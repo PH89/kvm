@@ -84,7 +84,7 @@ func runATXControl() {
 	}
 }
 
-func pressATXPowerButton(duration time.Duration) error {
+func pressATXPowerButtonForTime(duration time.Duration) error {
 	_, err := port.Write([]byte("\n"))
 	if err != nil {
 		return err
@@ -102,6 +102,32 @@ func pressATXPowerButton(duration time.Duration) error {
 		return err
 	}
 
+	return nil
+}
+
+func pressATXPowerButton() error {
+	_, err := port.Write([]byte("\n"))
+	if err != nil {
+		return err
+	}
+
+	_, err = port.Write([]byte("BTN_PWR_ON\n"))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func releaseATXPowerButton() error {
+	_, err := port.Write([]byte("\n"))
+	if err != nil {
+		return err
+	}
+
+	_, err = port.Write([]byte("BTN_PWR_OFF\n"))
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

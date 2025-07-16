@@ -1,4 +1,4 @@
-import React, { JSX } from "react";
+import React, {JSX, ReactNode, useEffect, useState} from "react";
 import { Link, type FetcherWithComponents, type LinkProps, useNavigation } from "react-router";
 
 import { cva, cx } from "@/cva.config";
@@ -161,8 +161,10 @@ type ButtonPropsType = Pick<
   | "onMouseLeave"
   | "onMouseDown"
   | "onMouseUp"
-  | "onMouseLeave"
   | "data-testid"
+  | "onBlur"
+  | "onKeyDown"
+  | "onKeyUp"
 > &
   React.ComponentProps<typeof ButtonContent> & {
     fetcher?: FetcherWithComponents<unknown>;
@@ -191,6 +193,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonPropsType>(
         name={props.name}
         value={props.value}
         data-testid={props["data-testid"]}
+        onBlur={props?.onBlur}
+        onKeyDown={props?.onKeyDown}
+        onKeyUp={props?.onKeyUp}
       >
         <ButtonContent
           {...props}
@@ -253,3 +258,71 @@ export const LabelButton = ({ htmlFor, ...props }: LabelPropsType) => {
     </div>
   );
 };
+
+type HoldablePropsType = React.ComponentProps<typeof Button> & {
+  onPress: () => void;
+  onRelease: () => void;
+};
+
+export const HoldableButton = (props: HoldablePropsType) => {
+
+  return <>
+    <Button
+        // FIXME: Prevent other mouse buttons light right click to trigger.
+        onMouseDown={(e) => {if (e.button === 0) props.onPress(); props.onMouseDown?.(e);}}
+        onMouseUp={(e) => {if (e.button === 0) props.onRelease(); props.onMouseUp?.(e);}}
+        onMouseLeave={(e) => {props.onRelease(); props.onMouseLeave?.(e);}}
+        onKeyDown={(e) => {
+          if ((e.key === " " || e.key === "Enter")) {
+            props.onPress();
+          }
+          props.onKeyDown?.(e);
+          e.preventDefault();
+        }}
+        onKeyUp={(e) => {
+          if (e.key === " " || e.key === "Enter") {
+            props.onRelease?.();
+          }
+          props.onKeyUp?.(e);
+          e.preventDefault();
+        }}
+        onBlur={(e) => {props.onRelease(); props.onBlur?.(e);}}
+        {...props} />
+  </>
+}
+
+type HoldableFeedbackButton = React.ComponentProps<typeof HoldableButton> & {
+  feedbackRender: (pressed: boolean, setFeedback: (feedback: JSX.Element | null) => void ) => void;
+}
+
+export const HoldableFeedbackButton = ({feedbackRender, onPress, onRelease, text, ...props}: HoldableFeedbackButton) => {
+  const [isHold, setHold] = useState(false);
+  const [feedback, setFeedback] = useState<ReactNode | null>(null);
+
+  useEffect(() => {
+    if (isHold) {
+      feedbackRender(true, ((fb) => setFeedback(fb)))
+    } else {
+      feedbackRender(false, ((fb) => setFeedback(fb)))
+    }
+  }, [feedbackRender, isHold])
+
+  return <>
+    <HoldableButton
+        onPress={() => {
+          if (!isHold){
+            setHold(true);
+            onPress();
+          }
+        }}
+        onRelease={() => {
+          if (isHold){
+            setHold(false);
+            onRelease();
+          }
+        }}
+        text={feedback ? <div>{text}{feedback}</div> : text}
+        {...props}
+    />
+  </>
+}
